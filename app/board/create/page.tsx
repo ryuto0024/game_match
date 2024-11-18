@@ -1,20 +1,21 @@
 'use client'
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { v4 as uuid } from 'uuid'
-import Link from 'next/link';
+import { v4 as uuid } from 'uuid';
+import { useRouter } from 'next/navigation';
 
 export default function CreatePost() {
   const supabase = createClient();
   const [content, setContent] = useState('');
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const router = useRouter(); 
 
   // ユーザーIDの取得
   const fetchUserId = async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error) {
-      console.error("ユーザーIDの取得に失敗しました", error);
+      console.error('ユーザーIDの取得に失敗しました', error);
     } else {
       setUserId(data?.user?.id || null);
     }
@@ -41,7 +42,7 @@ export default function CreatePost() {
         console.error('動画のアップロードに失敗しました:', error);
         return;
       }
-       uploadedVideoUrl = data?.path;
+      uploadedVideoUrl = data?.path;
     }
 
     // 投稿データをDBに挿入
@@ -49,19 +50,14 @@ export default function CreatePost() {
       .from('post')
       .insert([
         {
-          user_id: userId, 
+          user_id: userId,
           content,
-          video_url: videoFile
-            ? uploadedVideoUrl
-            : null,
-        }
+          video_url: videoFile ? uploadedVideoUrl : null,
+        },
       ]);
 
-      if (error) {
-        console.error('投稿の作成に失敗しました:', error.message);
-        console.error('詳細情報:', error.details);
-        return;
-      }
+    // 投稿成功後に投稿一覧に
+    router.push('/board');
   };
 
   // 初回レンダリング時にユーザーIDを取得
@@ -98,14 +94,12 @@ export default function CreatePost() {
             />
           </div>
           <div className="flex justify-end">
-            <Link href={'/board'}>
-              <button
-                type="submit"
-                className="px-6 py-2 border border-black text-sm font-medium rounded-md text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
-              >
+            <button
+              type="submit"
+              className="px-6 py-2 border border-black text-sm font-medium rounded-md text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+            >
               投稿する
-              </button>
-            </Link>
+            </button>
           </div>
         </form>
       </div>
