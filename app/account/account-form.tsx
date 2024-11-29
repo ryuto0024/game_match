@@ -2,15 +2,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { type User } from '@supabase/supabase-js'
-
-// ...
+import Avatar from './avatar'
+import Link from 'next/link'
 
 export default function AccountForm({ user }: { user: User | null }) {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
-  const [fullname, setFullname] = useState<string | null>(null)
   const [username, setUsername] = useState<string | null>(null)
-  const [website, setWebsite] = useState<string | null>(null)
+  const [avatar_url, setAvatarUrl] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false);
 
   const getProfile = useCallback(async () => {
     try {
@@ -18,7 +18,7 @@ export default function AccountForm({ user }: { user: User | null }) {
 
       const { data, error, status } = await supabase
         .from('profiles')
-        .select(`full_name, username, website`)
+        .select(` username, avatar_url`)
         .eq('id', user?.id)
         .single()
 
@@ -28,9 +28,8 @@ export default function AccountForm({ user }: { user: User | null }) {
       }
 
       if (data) {
-        setFullname(data.full_name)
         setUsername(data.username)
-        setWebsite(data.website)
+        setAvatarUrl(data.avatar_url)
       }
     } catch (error) {
       alert('Error loading user data!')
@@ -45,20 +44,18 @@ export default function AccountForm({ user }: { user: User | null }) {
 
   async function updateProfile({
     username,
-    website,
+    avatar_url,
   }: {
     username: string | null
-    fullname: string | null
-    website: string | null
+    avatar_url: string | null
   }) {
     try {
       setLoading(true)
 
       const { error } = await supabase.from('profiles').upsert({
         id: user?.id as string,
-        full_name: fullname,
         username,
-        website,
+        avatar_url,
         updated_at: new Date().toISOString(),
       })
       if (error) throw error
@@ -71,59 +68,106 @@ export default function AccountForm({ user }: { user: User | null }) {
   }
 
   return (
-    <div className="form-widget">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <h2 className="text-center text-3xl font-bold font-roboto text-black mb-8">
+          プロフィール設定
+        </h2>
 
-      {/* ... */}
+        <div className="space-y-6 bg-gray-100 p-8 rounded-lg">
+          <div className="flex flex-col items-center mb-4">
+            <div className="relative group w-24 h-24 rounded-full overflow-hidden mb-2">
+              <Avatar
+                uid={user?.id ?? null}
+                url={avatar_url}
+                size={96} 
+                onUpload={(url) => {
+                  setAvatarUrl(url);
+                  updateProfile({ username, avatar_url: url });
+                }}
+              />
+            </div>
+          </div>       
+          <div className="space-y-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              メールアドレス
+            </label>
+            <input
+              id="email"
+              type="text"
+              value={user?.email}
+              disabled
+              className="w-full p-2 border border-gray-300 rounded-md bg-gray-200 text-gray-500"
+            />
+          </div>
 
-      <div>
-        <label htmlFor="email">Email</label>
-        <input id="email" type="text" value={user?.email} disabled />
-      </div>
-      <div>
-        <label htmlFor="fullName">Full Name</label>
-        <input
-          id="fullName"
-          type="text"
-          value={fullname || ''}
-          onChange={(e) => setFullname(e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor="username">Username</label>
-        <input
-          id="username"
-          type="text"
-          value={username || ''}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor="website">Website</label>
-        <input
-          id="website"
-          type="url"
-          value={website || ''}
-          onChange={(e) => setWebsite(e.target.value)}
-        />
-      </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700"
+              >
+                ユーザーネーム
+              </label>
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >編集
+                </button>
+              )}
+            </div>
+            <input
+              id="username"
+              type="text"
+              value={username || ""}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={!isEditing}
+              className={`w-full p-2 border border-gray-300 rounded-md ${
+                isEditing ? "bg-white" : "bg-gray-200"
+              } focus:outline-none focus:ring-2 focus:ring-black focus:border-black`}
+            />
+          </div>
 
-      <div>
-        <button
-          className="button primary block"
-          onClick={() => updateProfile({ fullname, username, website, })}
-          disabled={loading}
-        >
-          {loading ? 'Loading ...' : 'Update'}
-        </button>
+          <div className="space-y-4">
+            {isEditing && (
+              <button
+              onClick={() => {
+                updateProfile({ username, avatar_url });
+                setIsEditing(false);
+              }}
+                
+                disabled={loading}
+                className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+              >
+                {loading ? "Loading ..." : "更新する"}
+              </button>
+            )}
+            {/* <Link
+              href="/account/myboard"
+              className="block w-full px-4 py-2 text-center bg-white border border-black text-black rounded-md hover:bg-gray-50"
+            >
+              投稿一覧
+            </Link> */}
+            <form action="/auth/signout" method="post">
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+              >
+                ログアウト
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
-
-      <div>
-        <form action="/auth/signout" method="post">
-          <button className="button block" type="submit">
-            Sign out
-          </button>
-        </form>
-      </div>
+      <Link
+        href="/account/myboard"
+            >
+        投稿一覧
+      </Link>
     </div>
   )
 }
