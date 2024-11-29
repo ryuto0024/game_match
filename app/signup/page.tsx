@@ -1,9 +1,8 @@
 "use client"
-import { login } from './actions'
+import { signup } from '../login/actions'
 import { useState } from "react";
-import Link from 'next/link';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -12,7 +11,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold font-roboto text-black">
-            アカウントにログイン
+            新規登録
           </h2>
         </div>
         <form className="mt-8 space-y-6">
@@ -48,21 +47,15 @@ export default function LoginPage() {
               />
             </div>
           </div>
-
           <div className="space-y-4">
             <button
               type="submit"
-              formAction={login}
+              //TODO: 登録処理の修正
+              formAction={signup}
               className="w-full py-2 px-4 border border-black text-sm font-medium rounded-md text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
             >
-              ログイン
+              登録
             </button>
-            <div className="text-center">
-            <Link href={'/signup'}>
-                アカウントをお持ちでない方は
-                <span className="font-medium underline">新規登録</span>      
-            </Link>
-            </div>
           </div>
         </form>
       </div>
