@@ -206,89 +206,133 @@ export default function Matchmaking() {
   const handleGameChange = (value: string) => setSelectedGame(value);
 
   return (
-    <div>
-      {matchedUser ? (
-        <div>
-          <h2>マッチング成立！</h2>
-          <p>相手のユーザー名: {matchedUser.username}</p>
-          <p>
-            ランク:{' '}
-            {characters
-              .flatMap(({ game, rank }) => rank.map(({ value, label }) => ({ game, value, label })))
-              .find((r) => r.value === matchedUser.rank)?.label}
-          </p>
-          <p>使用キャラクター: {matchedUser.main_character}</p>
-        </div>
-      ) : isSearching ? (
-        <div>
-          <h2>マッチング中...</h2>
-          <button onClick={cancelSearch}>キャンセル</button>
-        </div>
-      ) : (
-        <>
-          <h2>リアルタイムマッチング</h2>
-          <PullDown
-            options={[
-              { value: '', label: 'ゲームを選択してください' },
-              ...characters.map(({ game, label }) => ({ value: game, label })),
-            ]}
-            onChange={(e) => handleGameChange(e.currentTarget.value)}
-          />
-
-          <div>
-            <label>ランク:</label>
-            <PullDown
-              options={[
-                { value: '', label: 'ランクを選択してください。' },
-                ...(
-                  characters.find((c) => c.game === selectedGame)?.rank || []
-                ).map(({ value, label }) => ({ value: `${value}`, label })),
-              ]}
-              onChange={(e) =>
-                setCurrentUser((prev) =>
-                  prev ? { ...prev, rank: Number(e.target.value) } : null
-                )
-              }
-            />
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        {matchedUser ? (
+          <div className="space-y-6 bg-gray-100 p-8 rounded-lg">
+            <h2 className="text-2xl font-bold text-center mb-4">
+              マッチング成立！
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <div>
+                  <p className="font-medium">
+                    相手のユーザー名: {matchedUser.username}
+                  </p>
+                  <p className="text-gray-600">
+                    ランク:{" "}
+                    {
+                      characters
+                        .flatMap(({ game, rank }) =>
+                          rank.map(({ value, label }) => ({
+                            game,
+                            value,
+                            label,
+                          })),
+                        )
+                        .find((r) => r.value === matchedUser.rank)?.label
+                    }
+                  </p>
+                  <p className="text-gray-600">
+                    使用キャラクター: {matchedUser.main_character}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <div>
-            <label>使用キャラクター:</label>
-            <PullDown
-              options={[
-                { value: '', label: 'キャラクターを選択してください' },
-                ...(
-                  characters.find((c) => c.game === selectedGame)?.characters || []
-                ).map((char) => ({ value: char, label: char })),
-              ]}
-              onChange={(e) =>
-                setCurrentUser((prev) =>
-                  prev ? { ...prev, main_character: e.target.value } : null
-                )
-              }
-            />
+        ) : isSearching ? (
+          <div className="space-y-6 bg-gray-100 p-8 rounded-lg text-center">
+            <h2 className="text-2xl font-bold mb-4">マッチング中...</h2>
+            
+            <button
+              onClick={cancelSearch}
+              className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+            >
+              キャンセル
+            </button>
           </div>
-
-          <div>
-            <label>苦手キャラクター:</label>
-            <PullDown
-              options={[
-                { value: '', label: 'キャラクターを選択してください' },
-                ...(
-                  characters.find((c) => c.game === selectedGame)?.characters || []
-                ).map((char) => ({ value: char, label: char })),
-              ]}
-              onChange={(e) =>
-                setCurrentUser((prev) =>
-                  prev ? { ...prev, weak_character: e.target.value } : null
-                )
-              }
-            />
+        ) : (
+          <div className="space-y-6 bg-gray-100 p-8 rounded-lg">
+            <h2 className="text-2xl font-bold text-center mb-4">
+              マッチング
+            </h2>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  ゲーム:
+                </label>
+                <PullDown
+                  options={[
+                    { value: '', label: 'ゲームを選択してください' },
+                    ...characters.map(({ game, label }) => ({ value: game, label })),
+                  ]}
+                  onChange={(e) => handleGameChange(e.currentTarget.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  ランク:
+                </label>
+                <PullDown
+                  options={[
+                    { value: '', label: 'ランクを選択してください' },
+                    ...(
+                      characters.find((c) => c.game === selectedGame)?.rank || []
+                    ).map(({ value, label }) => ({ value: `${value}`, label })),
+                  ]}
+                  onChange={(e) =>
+                    setCurrentUser((prev) =>
+                      prev ? { ...prev, rank: Number(e.target.value) } : null
+                    )
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  使用キャラクター:
+                </label>
+                <PullDown
+                  options={[
+                    { value: '', label: 'キャラクターを選択してください' },
+                    ...(
+                      characters.find((c) => c.game === selectedGame)?.characters || []
+                    ).map((char) => ({ value: char, label: char })),
+                  ]}
+                  onChange={(e) =>
+                    setCurrentUser((prev) =>
+                      prev ? { ...prev, main_character: e.target.value } : null
+                    )
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  苦手キャラクター:
+                </label>
+                <PullDown
+                  options={[
+                    { value: '', label: 'キャラクターを選択してください' },
+                    ...(
+                      characters.find((c) => c.game === selectedGame)?.characters || []
+                    ).map((char) => ({ value: char, label: char })),
+                  ]}
+                  onChange={(e) =>
+                    setCurrentUser((prev) =>
+                      prev ? { ...prev, weak_character: e.target.value } : null
+                    )
+                  }
+                />
+              </div>
+              <button
+                onClick={joinQueue}
+                className="w-full px-4 py-2 bg-black text-white rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+              >
+                マッチング開始
+              </button>
+            </div>
           </div>
-
-          <button onClick={joinQueue}>マッチング開始</button>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

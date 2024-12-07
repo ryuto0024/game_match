@@ -38,9 +38,7 @@ export const PullDown = React.forwardRef<HTMLSelectElement, Props>(
         )}
         <select
           id={id}
-          className={
-            className
-          }
+          className="w-full p-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
           ref={forwardedRef}
           {...props}
         >
@@ -50,7 +48,6 @@ export const PullDown = React.forwardRef<HTMLSelectElement, Props>(
             </option>
           ))}
         </select>
-        {/* エラーのCSSクラス名は環境によって変更する */}
         {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
       </>
     );
